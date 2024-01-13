@@ -50,13 +50,14 @@ void CreateFolderIfNotExists(bool exists, string filePath)
     }
 }
 
+CreateFolderIfNotExists(Directory.Exists(folderToSync), folderToSync);
+CreateFolderIfNotExists(Directory.Exists(folderSynced), folderSynced);
+
 while (true)
 {
     try
     {
-        CreateFolderIfNotExists(Directory.Exists(folderToSync), folderToSync);
-
-        foreach (string file in Directory.GetFileSystemEntries(folderToSync, "*", SearchOption.AllDirectories).OrderBy(x => x))
+        foreach (string file in Directory.GetFileSystemEntries(folderToSync, "*", SearchOption.AllDirectories).OrderBy(x => x.Length)) // first create the folders, for example, then the files
         {
             string fileWithoutFolder = file.Replace(folderToSync, "");
             CreateFileIfNotExists(Path.Exists(folderSynced + fileWithoutFolder), folderSynced + fileWithoutFolder, file);
@@ -66,7 +67,7 @@ while (true)
         var second = Directory.GetFileSystemEntries(folderSynced, "*", SearchOption.AllDirectories).Select(x => x.Replace(folderSynced, ""));
         IEnumerable<string> filesToRemove = second.Except(first);
 
-        foreach (string file in filesToRemove.OrderByDescending(x => x.Length))
+        foreach (string file in filesToRemove.OrderByDescending(x => x.Length)) // first delete the files, for example, then the folders
         {
             if (File.GetAttributes(folderSynced + file) == FileAttributes.Directory)
             {
